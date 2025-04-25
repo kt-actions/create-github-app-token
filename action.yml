@@ -11,7 +11,7 @@ inputs:
   configure-git:
     description: Configure git user name and email for the app
     required: false
-    default: "true"
+    default: 'true'
 outputs:
   token:
     description: GitHub installation access token
@@ -32,7 +32,7 @@ outputs:
     description: GitHub App user email
     value: ${{ steps.get-user-email.outputs.user-email }}
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - id: app-token
       uses: actions/create-github-app-token@v1
