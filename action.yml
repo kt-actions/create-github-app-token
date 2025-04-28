@@ -4,12 +4,16 @@ description: GitHub Action for creating a GitHub App installation access token. 
 inputs:
   app-id:
     description: GitHub App ID
-    required: true
+    required: false
   private-key:
     description: GitHub App private key. Escaped newlines (\\n) will be automatically replaced with actual newlines.
-    required: true
+    required: false
   configure-git:
     description: Configure git user name and email for the app
+    required: false
+    default: 'true'
+  default-to-github:
+    description: Use github.token as default token, if app-id or private-key are not provided
     required: false
     default: 'true'
 outputs:
@@ -34,11 +38,28 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - id: app-token
+    - id: generate-app-token
+      if: ${{ inputs.app-id != '' && inputs.private-key != '' || inputs.default-to-github == 'false' }}
       uses: actions/create-github-app-token@v1
       with:
         app-id: ${{ inputs.app-id }}
         private-key: ${{ inputs.private-key }}
+
+    - id: app-token
+      # Check that generate-app-token step has non-empty outputs otherwise use github.token
+      run: |
+        if [ -n "${{ steps.generate-app-token.outputs.token }}" ]; then
+          echo "Using generated app token"
+          echo "token=${{ steps.generate-app-token.outputs.token }}" >> "$GITHUB_OUTPUT"
+          echo "installation-id=${{ steps.generate-app-token.outputs.installation-id }}" >> "$GITHUB_OUTPUT"
+          echo "app-slug=${{ steps.generate-app-token.outputs.app-slug }}" >> "$GITHUB_OUTPUT"
+        else
+          echo "Using github.token as default token"
+          echo "token=${{ github.token }}" >> "$GITHUB_OUTPUT"
+          echo "installation-id=''" >> "$GITHUB_OUTPUT"
+          echo "app-slug=github-actions" >> "$GITHUB_OUTPUT"
+        fi
+      shell: bash
 
     - id: get-user-id
       shell: bash
