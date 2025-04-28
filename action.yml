@@ -12,7 +12,7 @@ inputs:
     description: Configure git user name and email for the app
     required: false
     default: 'true'
-  default-to-github:
+  default-to-github-token:
     description: Use github.token as default token, if app-id or private-key are not provided
     required: false
     default: 'true'
@@ -39,7 +39,7 @@ runs:
   using: 'composite'
   steps:
     - id: generate-app-token
-      if: ${{ inputs.app-id != '' && inputs.private-key != '' || inputs.default-to-github == 'false' }}
+      if: ${{ inputs.app-id != '' && inputs.private-key != '' || inputs.default-to-github-token == 'false' }}
       uses: actions/create-github-app-token@v1
       with:
         app-id: ${{ inputs.app-id }}
